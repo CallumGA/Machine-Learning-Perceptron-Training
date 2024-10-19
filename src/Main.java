@@ -9,7 +9,6 @@
 
 
 class Forward_Propagation {
-
     // defines the inputs and outputs as double arrays in the code
     double[][] inputs = new double[][]{
 
@@ -35,10 +34,24 @@ class Forward_Propagation {
     private double[] weights;
     private double bias;
     private double learningRate;
+    private Integer numberOfFeatures = 0;
+    public Forward_Propagation(Integer numberOfFeatures) {
+        this.weights = new double[numberOfFeatures];
+        this.numberOfFeatures = numberOfFeatures;
+    }
+
+    // sigmoid function calculation
+    private static double sigmoid(double x) {
+        return 1 / (1 + Math.exp(-x));
+    }
 
     // generates the initial weights and bias using Math.random().
-    public double GenerateWeights() {
-        return 0;
+    public double[] GenerateInitialWeights() {
+        // initialize weights randomly
+        for (int i = 0; i < numberOfFeatures; i++) {
+            weights[i] = (Math.random() * 2) - 1;
+        }
+        return weights;
     }
 
     public double CalculateError() {
@@ -54,7 +67,6 @@ class Forward_Propagation {
         */
         return 0;
     }
-
 
     public double UpdateWeights() {
         return 0;
@@ -74,5 +86,9 @@ class Train_Test {
 public class Main {
     public static void main(String[] args) {
 
+        // we have 3 inputs which will require 3 weights
+        var weights = new Forward_Propagation(3);
+        weights.GenerateInitialWeights();
+        System.out.println();
     }
 }
