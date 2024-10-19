@@ -7,6 +7,11 @@
  *
  * */
 
+// FORWARD PROPAGATION
+// Steps:
+// 1. input data (we have 3 inputs)
+// 2. calculate weighted sum via weights and bias
+// 3. run weighted sum through sigmoid (activation function)
 
 class Forward_Propagation {
     // defines the inputs and outputs as double arrays in the code
@@ -32,9 +37,9 @@ class Forward_Propagation {
     };
     // weights and bias
     private double[] weights;
-    private double bias;
-    private double learningRate;
+    private double bias = 0.0;
     private Integer numberOfFeatures = 0;
+
     public Forward_Propagation(Integer numberOfFeatures) {
         this.weights = new double[numberOfFeatures];
         this.numberOfFeatures = numberOfFeatures;
@@ -54,31 +59,39 @@ class Forward_Propagation {
         return weights;
     }
 
-    public double CalculateError() {
-        /*
-            1.	Error Calculation:
-            After the perceptron makes a prediction, it compares that prediction to the true label (the expected output from the training data). If the prediction is incorrect, the perceptron calculates an error, which is simply:
 
-            error = label - prediction
-
-            // *** for use the label will be the Alarm column ***
-
-            The error tells the perceptron how far off its prediction was. If the perceptron under-predicts (e.g., it predicts 0 when the label is 1), the error is positive. If it over-predicts (e.g., it predicts 1 when the label is 0), the error is negative.
-        */
-        return 0;
-    }
-
-    public double UpdateWeights() {
-        return 0;
-    }
-
-    // calculates the outputs of a given input set.
-    public String GenerateOutput() {
-        return null;
+    // calculates the outputs of a given input set based on the weights and bias
+    public double GenerateOutput() {
+        double sum = 0.0;
+        for (int i = 0; i < weights.length; i++) {
+            // TODO: we will need a nested for-loop for the nested array
+            // sum += weights[i] * inputs[i];
+        }
+        // add bias
+        sum += bias;
+        // apply the sigmoid function to get the prediction
+        return sigmoid(sum);
     }
 }
 
+// BACKWARD PROPAGATION
+// Steps:
+// 1. calculate the error by comparing the predicted output from forward propagation with the true label: error = label - prediction
+//    the error tells the perceptron how far off its prediction was.
+// 2. we calculate the new weights with the new weights based on the following rule: new_weight = current_weight + (learning rate x error calc x input)
+// 3. we calculate the new bias: bias = bias + (learning rate x error)
+// 4. we actually update the weights with the new weights and bias with new bias
 class Train_Test {
+
+    private double learningRate;
+
+    public Train_Test() {
+
+    }
+
+    public double CalculateError() {
+        return 0;
+    }
 
 }
 
