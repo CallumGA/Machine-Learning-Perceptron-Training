@@ -35,6 +35,7 @@ class Forward_Propagation {
 
             {0}
     };
+
     // weights and bias
     private double[] weights;
     private double bias = 0.0;
@@ -59,18 +60,23 @@ class Forward_Propagation {
         return weights;
     }
 
-
-    // calculates the outputs of a given input set based on the weights and bias
-    public double GenerateOutput() {
-        double sum = 0.0;
-        for (int i = 0; i < weights.length; i++) {
-            // TODO: we will need a nested for-loop for the nested array
-            // sum += weights[i] * inputs[i];
+    // calculates the outputs for a given 2D input set based on the weights and bias
+    public double[] GenerateOutput() {
+        double[] outputs = new double[inputs.length];
+        // iterate over each input row in the 2D array
+        for (int i = 0; i < inputs.length; i++) {
+            double sum = 0.0;
+            // calculate the weighted sum for the current input row
+            for (int j = 0; j < weights.length; j++) {
+                // multiply each input by its corresponding weight
+                sum += weights[j] * inputs[i][j];
+            }
+            // add bias to the sum
+            sum += bias;
+            // apply the sigmoid function
+            outputs[i] = sigmoid(sum);
         }
-        // add bias
-        sum += bias;
-        // apply the sigmoid function to get the prediction
-        return sigmoid(sum);
+        return outputs;
     }
 }
 
@@ -99,9 +105,13 @@ class Train_Test {
 public class Main {
     public static void main(String[] args) {
 
-        // we have 3 inputs which will require 3 weights
-        var weights = new Forward_Propagation(3);
-        weights.GenerateInitialWeights();
+        // generate initial weights
+        var forwardPropagation = new Forward_Propagation(3);
+        forwardPropagation.GenerateInitialWeights();
+
+        // generate output for the forward propagation
+        var forwardPassOutputs = forwardPropagation.GenerateOutput();
+
         System.out.println();
     }
 }
