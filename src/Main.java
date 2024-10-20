@@ -25,15 +25,16 @@ class Forward_Propagation {
 
             {0, 1, 1}
     };
-    double[][] outputs = new double[][]{
+    // labels for the expected outputs
+    double[] outputs = new double[]{
 
-            {0},
+            0,
 
-            {1},
+            1,
 
-            {1},
+            1,
 
-            {0}
+            0
     };
 
     // weights and bias
@@ -82,21 +83,33 @@ class Forward_Propagation {
 
 // BACKWARD PROPAGATION
 // Steps:
-// 1. calculate the error by comparing the predicted output from forward propagation with the true label: error = label - prediction
+// 1. calculate the error by comparing the generated output from forward propagation with the true label: error = label - prediction
 //    the error tells the perceptron how far off its prediction was.
 // 2. we calculate the new weights with the new weights based on the following rule: new_weight = current_weight + (learning rate x error calc x input)
 // 3. we calculate the new bias: bias = bias + (learning rate x error)
 // 4. we actually update the weights with the new weights and bias with new bias
 class Train_Test {
 
-    private double learningRate;
+    private double[] forwardPropOutputs;
 
-    public Train_Test() {
-
+    public Train_Test(double[] forwardPropagationOutputs) {
+        this.forwardPropOutputs = forwardPropagationOutputs;
     }
 
-    public double CalculateError() {
-        return 0;
+    public double[] CalculateError(double[] labels) {
+        double[] errorCalculations = new double[forwardPropOutputs.length];
+        double error;
+        for (int i = 0; i < forwardPropOutputs.length; i++) {
+            error = labels[i] - forwardPropOutputs[i];
+            errorCalculations[i] = error;
+        }
+        return errorCalculations;
+    }
+
+    public double[] CalculateNewWeightsBias() {
+        double[] newWeights = new double[forwardPropOutputs.length];
+
+        return newWeights;
     }
 
 }
@@ -110,7 +123,10 @@ public class Main {
         forwardPropagation.GenerateInitialWeights();
 
         // generate output for the forward propagation
-        var forwardPassOutputs = forwardPropagation.GenerateOutput();
+        var forwardPropOutputs = forwardPropagation.GenerateOutput();
+
+        var backwardPropagation = new Train_Test(forwardPropOutputs);
+        var errorCalcs = backwardPropagation.CalculateError(forwardPropagation.outputs);
 
         System.out.println();
     }
