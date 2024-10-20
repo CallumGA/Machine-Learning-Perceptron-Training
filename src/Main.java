@@ -1,133 +1,177 @@
-/*
- * Perceptron - Machine Learning, Assignment 5 - Part 2.2
- *
- * Callum Anderson
- * T00708915
- * October 20, 2024
- *
- * */
-
-// FORWARD PROPAGATION
-// Steps:
-// 1. input data (we have 3 inputs)
-// 2. calculate weighted sum via weights and bias
-// 3. run weighted sum through sigmoid (activation function)
-
+// FORWARD PROPAGATION CLASS
 class Forward_Propagation {
-    // defines the inputs and outputs as double arrays in the code
+    // Weights and bias for the perceptron
+    public double[] weights;
+    public double bias = 0.0;
+    // Defines the inputs and expected outputs as double arrays
     double[][] inputs = new double[][]{
-
-            {0, 0, 1},
-
-            {1, 1, 1},
-
-            {1, 0, 1},
-
-            {0, 1, 1}
+            {0, 0, 1},  // Instance 1
+            {1, 1, 1},  // Instance 2
+            {1, 0, 1},  // Instance 3
+            {0, 1, 1}   // Instance 4
     };
-    // labels for the expected outputs
-    double[] outputs = new double[]{
-
-            0,
-
-            1,
-
-            1,
-
-            0
+    // Labels for the expected outputs (Alarm classification: 0 for Fake, 1 for Real)
+    double[] labels = new double[]{
+            0,  // Fake (Instance 1)
+            1,  // Real (Instance 2)
+            1,  // Real (Instance 3)
+            0   // Fake (Instance 4)
     };
+    private int numberOfFeatures = 0;
 
-    // weights and bias
-    private double[] weights;
-    private double bias = 0.0;
-    private Integer numberOfFeatures = 0;
-
-    public Forward_Propagation(Integer numberOfFeatures) {
+    // Constructor to initialize weights array
+    public Forward_Propagation(int numberOfFeatures) {
         this.weights = new double[numberOfFeatures];
         this.numberOfFeatures = numberOfFeatures;
     }
 
-    // sigmoid function calculation
+    // Sigmoid activation function
     private static double sigmoid(double x) {
         return 1 / (1 + Math.exp(-x));
     }
 
-    // generates the initial weights and bias using Math.random().
+    // Sigmoid derivative function (used for backpropagation)
+    public static double sigmoidDerivative(double output) {
+        return output * (1 - output);
+    }
+
+    // Generates the initial weights and bias using Math.random().
     public double[] GenerateInitialWeights() {
-        // initialize weights randomly
         for (int i = 0; i < numberOfFeatures; i++) {
-            weights[i] = (Math.random() * 2) - 1;
+            weights[i] = (Math.random() * 2) - 1;  // Random weights between -1 and 1
         }
         return weights;
     }
 
-    // calculates the outputs for a given 2D input set based on the weights and bias
+    // Calculates the outputs for a given 2D input set based on the weights and bias
     public double[] GenerateOutput() {
         double[] outputs = new double[inputs.length];
-        // iterate over each input row in the 2D array
         for (int i = 0; i < inputs.length; i++) {
             double sum = 0.0;
-            // calculate the weighted sum for the current input row
             for (int j = 0; j < weights.length; j++) {
-                // multiply each input by its corresponding weight
-                sum += weights[j] * inputs[i][j];
+                sum += weights[j] * inputs[i][j];  // Weighted sum of inputs
             }
-            // add bias to the sum
-            sum += bias;
-            // apply the sigmoid function
-            outputs[i] = sigmoid(sum);
+            sum += bias;  // Adding bias
+            outputs[i] = sigmoid(sum);  // Applying sigmoid activation
         }
         return outputs;
     }
-}
 
-// BACKWARD PROPAGATION
-// Steps:
-// 1. calculate the error by comparing the generated output from forward propagation with the true label: error = label - prediction
-//    the error tells the perceptron how far off its prediction was.
-// 2. we calculate the new weights with the new weights based on the following rule: new_weight = current_weight + (learning rate x error calc x input)
-// 3. we calculate the new bias: bias = bias + (learning rate x error)
-// 4. we actually update the weights with the new weights and bias with new bias
-class Train_Test {
+    // Classifies a new input using the trained weights and bias
+    public double classify(double[] input) {
+        double sum = 0.0;
+        for (int i = 0; i < input.length; i++) {
+            sum += weights[i] * input[i];
+        }
+        sum += bias;
+        double output = sigmoid(sum);  // Apply sigmoid to the sum
 
-    private double[] forwardPropOutputs;
-
-    public Train_Test(double[] forwardPropagationOutputs) {
-        this.forwardPropOutputs = forwardPropagationOutputs;
+        // If output >= 0.5, classify as Real (1), otherwise Fake (0)
+        return output >= 0.5 ? 1 : 0;
     }
 
+    // Updates weights and bias after backpropagation
+    public void updateWeightsAndBias(double[] updatedWeights, double updatedBias) {
+        this.weights = updatedWeights;
+        this.bias = updatedBias;
+    }
+}
+
+// BACKWARD PROPAGATION CLASS
+class Train_Test {
+
+    public double[] weights;
+    private double[] forwardPropOutputs;
+    private double[][] inputs;
+    private double bias;
+
+    // Constructor to set initial values from forward propagation
+    public Train_Test(double[] forwardPropagationOutputs, double[][] inputs, double[] weights, double bias) {
+        this.forwardPropOutputs = forwardPropagationOutputs;
+        this.inputs = inputs;
+        this.weights = weights;
+        this.bias = bias;
+    }
+
+    // Calculate the error for each output: (label - prediction)
     public double[] CalculateError(double[] labels) {
         double[] errorCalculations = new double[forwardPropOutputs.length];
-        double error;
         for (int i = 0; i < forwardPropOutputs.length; i++) {
-            error = labels[i] - forwardPropOutputs[i];
-            errorCalculations[i] = error;
+            errorCalculations[i] = labels[i] - forwardPropOutputs[i];
         }
         return errorCalculations;
     }
 
-    public double[] CalculateNewWeightsBias() {
-        double[] newWeights = new double[forwardPropOutputs.length];
+    // Update weights and bias using the perceptron learning rule, incorporating the sigmoid derivative
+    public void UpdateWeightsBias(double[] errors) {
+        double learningRate = 0.1;  // Learning rate for weight updates
 
-        return newWeights;
+        // Update weights based on the error and the corresponding input
+        for (int i = 0; i < weights.length; i++) {
+            double weightUpdate = 0.0;
+            for (int j = 0; j < inputs.length; j++) {
+                double output = forwardPropOutputs[j];
+                // Apply the learning rule: weights[i] += learning_rate * error * sigmoid_derivative * input
+                weightUpdate += learningRate * errors[j] * Forward_Propagation.sigmoidDerivative(output) * inputs[j][i];
+            }
+            weights[i] += weightUpdate;  // Adjust weight
+        }
+
+        // Update bias based on the errors and sigmoid derivative
+        double biasUpdate = 0.0;
+        for (int i = 0; i < errors.length; i++) {
+            biasUpdate += learningRate * errors[i] * Forward_Propagation.sigmoidDerivative(forwardPropOutputs[i]);
+        }
+        bias += biasUpdate;  // Adjust bias
     }
 
+    // Getter for updated weights
+    public double[] getUpdatedWeights() {
+        return weights;
+    }
+
+    // Getter for updated bias
+    public double getUpdatedBias() {
+        return bias;
+    }
 }
 
-
+// MAIN CLASS
 public class Main {
     public static void main(String[] args) {
 
-        // generate initial weights
-        var forwardPropagation = new Forward_Propagation(3);
-        forwardPropagation.GenerateInitialWeights();
+        // Create a forward propagation object with 3 features (inputs)
+        Forward_Propagation forwardPropagation = new Forward_Propagation(3);
+        forwardPropagation.GenerateInitialWeights();  // Generate random initial weights
 
-        // generate output for the forward propagation
-        var forwardPropOutputs = forwardPropagation.GenerateOutput();
+        // Set the number of iterations for training (1000)
+        int numIterations = 1000;
 
-        var backwardPropagation = new Train_Test(forwardPropOutputs);
-        var errorCalcs = backwardPropagation.CalculateError(forwardPropagation.outputs);
+        // Training loop for 1000 iterations
+        for (int iteration = 0; iteration < numIterations; iteration++) {
+            // Perform forward propagation to get the outputs
+            double[] forwardPropOutputs = forwardPropagation.GenerateOutput();
 
-        System.out.println();
+            // Create a backpropagation object to calculate error and update weights
+            Train_Test backwardPropagation = new Train_Test(forwardPropOutputs, forwardPropagation.inputs, forwardPropagation.weights, forwardPropagation.bias);
+            double[] errorCalcs = backwardPropagation.CalculateError(forwardPropagation.labels);
+
+            // Update the weights and bias based on errors
+            backwardPropagation.UpdateWeightsBias(errorCalcs);
+
+            // Pass updated weights and bias back to forward propagation
+            forwardPropagation.updateWeightsAndBias(backwardPropagation.getUpdatedWeights(), backwardPropagation.getUpdatedBias());
+        }
+
+        // Final output after training
+        System.out.println("\n");
+        System.out.println("Final outputs after 1000 iterations: " + java.util.Arrays.toString(forwardPropagation.GenerateOutput()));
+        System.out.println("Final weights: " + java.util.Arrays.toString(forwardPropagation.weights));
+        System.out.println("Final bias: " + forwardPropagation.bias);
+
+        // Test with a new unseen instance {0, 0, 0} and classify it
+        double[] newInstance = new double[]{0, 0, 0};
+        double classificationResult = forwardPropagation.classify(newInstance);
+        System.out.println("Classification for new instance {0, 0, 0}: " + (classificationResult == 1 ? "Real" : "Fake"));
     }
 }
