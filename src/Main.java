@@ -1,41 +1,53 @@
+/*
+ * Perceptron - Machine Learning, Assignment 5 - Part 2.2
+ *
+ * Callum Anderson
+ * T00708915
+ * October 20, 2024
+ *
+ * */
+
 // FORWARD PROPAGATION CLASS
 class Forward_Propagation {
-    // Weights and bias for the perceptron
+    // weights and bias for the perceptron
     public double[] weights;
     public double bias = 0.0;
-    // Defines the inputs and expected outputs as double arrays
+    // sensor input
     double[][] inputs = new double[][]{
             {0, 0, 1},  // Instance 1
             {1, 1, 1},  // Instance 2
             {1, 0, 1},  // Instance 3
             {0, 1, 1}   // Instance 4
     };
-    // Labels for the expected outputs (Alarm classification: 0 for Fake, 1 for Real)
+    // labels for what is the expected classification
     double[] labels = new double[]{
-            0,  // Fake (Instance 1)
-            1,  // Real (Instance 2)
-            1,  // Real (Instance 3)
-            0   // Fake (Instance 4)
+            // fake
+            0,
+            // real
+            1,
+            // real
+            1,
+            // fake
+            0
     };
     private int numberOfFeatures = 0;
 
-    // Constructor to initialize weights array
     public Forward_Propagation(int numberOfFeatures) {
         this.weights = new double[numberOfFeatures];
         this.numberOfFeatures = numberOfFeatures;
     }
 
-    // Sigmoid activation function
+    // our activation function (sigmoid)
     private static double sigmoid(double x) {
         return 1 / (1 + Math.exp(-x));
     }
 
-    // Sigmoid derivative function (used for backpropagation)
+    // derivitive of sigmoid used in back propagation
     public static double sigmoidDerivative(double output) {
         return output * (1 - output);
     }
 
-    // Generates the initial weights and bias using Math.random().
+    // randomly creates our initial weights (pre-trained)
     public double[] GenerateInitialWeights() {
         for (int i = 0; i < numberOfFeatures; i++) {
             weights[i] = (Math.random() * 2) - 1;  // Random weights between -1 and 1
@@ -43,34 +55,35 @@ class Forward_Propagation {
         return weights;
     }
 
-    // Calculates the outputs for a given 2D input set based on the weights and bias
+    // calculates the outputs for a given 2D input set based on the weights and bias
     public double[] GenerateOutput() {
         double[] outputs = new double[inputs.length];
         for (int i = 0; i < inputs.length; i++) {
             double sum = 0.0;
             for (int j = 0; j < weights.length; j++) {
-                sum += weights[j] * inputs[i][j];  // Weighted sum of inputs
+                // weighted input sums
+                sum += weights[j] * inputs[i][j];
             }
-            sum += bias;  // Adding bias
-            outputs[i] = sigmoid(sum);  // Applying sigmoid activation
+            sum += bias;
+            outputs[i] = sigmoid(sum);
         }
         return outputs;
     }
 
-    // Classifies a new input using the trained weights and bias
+    // classifies a new input using the trained weights and bias
     public double classify(double[] input) {
         double sum = 0.0;
         for (int i = 0; i < input.length; i++) {
             sum += weights[i] * input[i];
         }
         sum += bias;
-        double output = sigmoid(sum);  // Apply sigmoid to the sum
+        double output = sigmoid(sum);
 
-        // If output >= 0.5, classify as Real (1), otherwise Fake (0)
+        // if output is greater than 0.5 classify as real, if less then classify as fake
         return output >= 0.5 ? 1 : 0;
     }
 
-    // Updates weights and bias after backpropagation
+    // actually update the weights in our model based on the results of the back propagation
     public void updateWeightsAndBias(double[] updatedWeights, double updatedBias) {
         this.weights = updatedWeights;
         this.bias = updatedBias;
@@ -85,7 +98,6 @@ class Train_Test {
     private double[][] inputs;
     private double bias;
 
-    // Constructor to set initial values from forward propagation
     public Train_Test(double[] forwardPropagationOutputs, double[][] inputs, double[] weights, double bias) {
         this.forwardPropOutputs = forwardPropagationOutputs;
         this.inputs = inputs;
@@ -93,7 +105,7 @@ class Train_Test {
         this.bias = bias;
     }
 
-    // Calculate the error for each output: (label - prediction)
+    // calculate the error for each output via: (label - prediction)
     public double[] CalculateError(double[] labels) {
         double[] errorCalculations = new double[forwardPropOutputs.length];
         for (int i = 0; i < forwardPropOutputs.length; i++) {
@@ -102,35 +114,36 @@ class Train_Test {
         return errorCalculations;
     }
 
-    // Update weights and bias using the perceptron learning rule, incorporating the sigmoid derivative
+    // update weights and bias using the perceptron learning rule, incorporating the sigmoid derivative
     public void UpdateWeightsBias(double[] errors) {
-        double learningRate = 0.1;  // Learning rate for weight updates
-
-        // Update weights based on the error and the corresponding input
+        // this is our learning rate
+        double learningRate = 0.1;
+        // update weights based on the error and the corresponding input
         for (int i = 0; i < weights.length; i++) {
             double weightUpdate = 0.0;
             for (int j = 0; j < inputs.length; j++) {
                 double output = forwardPropOutputs[j];
-                // Apply the learning rule: weights[i] += learning_rate * error * sigmoid_derivative * input
+                // apply the learning rule: weights[i] += learning_rate * error * sigmoid_derivative * input
                 weightUpdate += learningRate * errors[j] * Forward_Propagation.sigmoidDerivative(output) * inputs[j][i];
             }
-            weights[i] += weightUpdate;  // Adjust weight
+            // actually adjust our weights
+            weights[i] += weightUpdate;
         }
 
-        // Update bias based on the errors and sigmoid derivative
+        // update the bias
         double biasUpdate = 0.0;
         for (int i = 0; i < errors.length; i++) {
             biasUpdate += learningRate * errors[i] * Forward_Propagation.sigmoidDerivative(forwardPropOutputs[i]);
         }
-        bias += biasUpdate;  // Adjust bias
+        bias += biasUpdate;
     }
 
-    // Getter for updated weights
+    // getter for updated weights
     public double[] getUpdatedWeights() {
         return weights;
     }
 
-    // Getter for updated bias
+    // getter for updated bias
     public double getUpdatedBias() {
         return bias;
     }
@@ -140,36 +153,36 @@ class Train_Test {
 public class Main {
     public static void main(String[] args) {
 
-        // Create a forward propagation object with 3 features (inputs)
+        // create a forward propagation object with 3 features (inputs)
         Forward_Propagation forwardPropagation = new Forward_Propagation(3);
-        forwardPropagation.GenerateInitialWeights();  // Generate random initial weights
+        // generate the initial random weights
+        forwardPropagation.GenerateInitialWeights();
 
-        // Set the number of iterations for training (1000)
+        // we run through 1000 iterations of training
         int numIterations = 1000;
 
-        // Training loop for 1000 iterations
         for (int iteration = 0; iteration < numIterations; iteration++) {
-            // Perform forward propagation to get the outputs
+            // we do the forward propagation to get outputs
             double[] forwardPropOutputs = forwardPropagation.GenerateOutput();
 
-            // Create a backpropagation object to calculate error and update weights
+            // we run backpropagation
             Train_Test backwardPropagation = new Train_Test(forwardPropOutputs, forwardPropagation.inputs, forwardPropagation.weights, forwardPropagation.bias);
             double[] errorCalcs = backwardPropagation.CalculateError(forwardPropagation.labels);
 
-            // Update the weights and bias based on errors
+            // update the weights and bias based on errors
             backwardPropagation.UpdateWeightsBias(errorCalcs);
 
-            // Pass updated weights and bias back to forward propagation
+            // feed updated weights and bias back to forward propagation
             forwardPropagation.updateWeightsAndBias(backwardPropagation.getUpdatedWeights(), backwardPropagation.getUpdatedBias());
         }
 
-        // Final output after training
+        // final outputs
         System.out.println("\n");
         System.out.println("Final outputs after 1000 iterations: " + java.util.Arrays.toString(forwardPropagation.GenerateOutput()));
         System.out.println("Final weights: " + java.util.Arrays.toString(forwardPropagation.weights));
         System.out.println("Final bias: " + forwardPropagation.bias);
 
-        // Test with a new unseen instance {0, 0, 0} and classify it
+        // feed in the unseen instance to see if it classifies correctly
         double[] newInstance = new double[]{0, 0, 0};
         double classificationResult = forwardPropagation.classify(newInstance);
         System.out.println("Classification for new instance {0, 0, 0}: " + (classificationResult == 1 ? "Real" : "Fake"));
